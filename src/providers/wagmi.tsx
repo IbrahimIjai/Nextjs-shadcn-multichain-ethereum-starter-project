@@ -1,45 +1,37 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import {
-  getDefaultWallets,
-  RainbowKitProvider,
-  lightTheme,
-  darkTheme,
-  midnightTheme,
-} from "@rainbow-me/rainbowkit";
-import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { mainnet, polygon, bsc } from "wagmi/chains";
-import { alchemyProvider } from "wagmi/providers/alchemy";
-import { publicProvider } from "wagmi/providers/public";
+import React from "react";
+
+import { createConfig, WagmiProvider as WagmiProv, State } from "wagmi";
 import { useTheme } from "next-themes";
 
-const { chains, publicClient } = configureChains(
-  [mainnet, polygon, bsc],
-  [alchemyProvider({ apiKey: process.env.ALCHEMY_ID! }), publicProvider()],
-);
+import { config, projectId } from "./wagmi-config";
 
-const { connectors } = getDefaultWallets({
-  appName: "My RainbowKit App",
-  projectId: "YOUR_PROJECT_ID",
-  chains,
+import { createWeb3Modal } from "@web3modal/wagmi/react";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Setup queryClient
+const queryClient = new QueryClient();
+
+if (!projectId) throw new Error("Project ID is not defined");
+
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId,
+  enableAnalytics: true, 
 });
 
-const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
-});
-
-export function WagmiProvider({ children }: { children: React.ReactNode }) {
-  const { setTheme, theme } = useTheme();
+export function WagmiProvider({
+  children,
+  initialState,
+}: {
+  children: React.ReactNode;
+  initialState?: State;
+}) {
+  // const { setTheme, theme } = useTheme();
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider
-        theme={theme == "light" ? lightTheme() : midnightTheme()}
-        chains={chains}
-      >
-        {children}
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <WagmiProv config={config} initialState={initialState}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProv>
   );
 }
