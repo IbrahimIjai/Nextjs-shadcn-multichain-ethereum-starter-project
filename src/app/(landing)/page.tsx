@@ -1,15 +1,15 @@
 "use client";
 
 import { ModeToggle } from "@/components/theme-switch";
-import NetworkSwitch from "@/components/wagmi/network-switch";
+import { useNetworkConnectorUpdater } from "@/hooks/useSwitchNetwork";
 
 export default function Home() {
+  useNetworkConnectorUpdater();
   return (
     <main className="">
       <ModeToggle />
       <ConnectButton />
       <w3m-network-button />
-      {/* <NetworkSwitch /> */}
     </main>
   );
 }
